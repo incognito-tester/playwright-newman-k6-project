@@ -49,8 +49,8 @@ test('test an end-to-end order flow', async ({ page }) => {
  
   // Fill in checkout information
   await firstName.fill('Taufiqur');
-  await lastName.fill('Miraz');
-  await postalCode.fill('12345');
+  await lastName.fill('Rahman');
+  await postalCode.fill('54321');
   await continueButton.click();
   await expect(title).toContainText('Checkout: Overview');
   await finishButton.click();
@@ -61,3 +61,5 @@ test('test an end-to-end order flow', async ({ page }) => {
   await menuButton.click();
   await logoutLink.click();
 });
+
+// Run on github actions with name UI + API + LOAD Tests
