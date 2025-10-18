@@ -1,0 +1,475 @@
+{
+	"info": {
+		"_postman_id": "5550221a-adc9-49ff-9bd7-516034545a26",
+		"name": "Simple Grocery Store",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "12717954",
+		"_collection_link": "https://winter-firefly-523728.postman.co/workspace/SOL~f0ef3ac3-56e5-4d06-804a-081bfab4261a/collection/12717954-5550221a-adc9-49ff-9bd7-516034545a26?action=share&source=collection_link&creator=12717954"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var clientName = \"Client_\" + Date.now(); ",
+							"var uniqueEmail = \"user\" + Math.floor(Math.random() * 100000) + \"@example.com\";",
+							"pm.variables.set(\"clientName\", clientName);",
+							"pm.variables.set(\"uniqueEmail\", uniqueEmail)"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const response = pm.response.json();",
+							"let accessToken = response.accessToken;",
+							"pm.collectionVariables.set(\"accessToken\", accessToken);",
+							"",
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.expect(pm.response.code).to.equal(201);",
+							"});",
+							"pm.test(\"Response contains accessToken\", function () {",
+							"    pm.expect(accessToken).to.not.be.null;",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {
+					"content-type": true
+				}
+			},
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"clientName\": \"{{clientName}}\",\n    \"clientEmail\": \"{{uniqueEmail}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://simple-grocery-store-api.click/api-clients",
+					"protocol": "https",
+					"host": [
+						"simple-grocery-store-api",
+						"click"
+					],
+					"path": [
+						"api-clients"
+					],
+					"query": [
+						{
+							"key": "clientName",
+							"value": "Postman on Valentin's computer",
+							"disabled": true
+						},
+						{
+							"key": "clientEmail",
+							"value": "test@mail.com",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Product List",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const response = pm.response.json();",
+							"",
+							"// Test that the response has at least two products (This is fine as it is)",
+							"pm.test(\"Product list has at least two items\", function () {",
+							"    pm.expect(response.length).to.be.at.least(2);",
+							"});",
+							"",
+							"// Filter the array to get only products that are in stock",
+							"let inStockList = response.filter(product => product.inStock == true);",
+							"",
+							"// Use a simple if/else to handle the logic for setting the variable",
+							"if (inStockList.length > 0) {",
+							"    // Generate a random index based on the length of the filtered array",
+							"    let randomIndex = Math.floor(Math.random() * inStockList.length);",
+							"    ",
+							"    // Get the randomly selected product object's ID",
+							"    let randomProduct = inStockList[randomIndex].id;",
+							"    ",
+							"    pm.collectionVariables.set(\"productId\", randomProduct);",
+							"    ",
+							"    console.log(\"Random in stock product: \", randomProduct);",
+							"    ",
+							"    pm.test(\"At least one product is in stock\", function () {",
+							"        pm.expect(inStockList.length).to.be.at.least(1);",
+							"    });",
+							"} else {",
+							"    console.warn(\"There are no products in stock!\");",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://simple-grocery-store-api.click/products",
+					"protocol": "https",
+					"host": [
+						"simple-grocery-store-api",
+						"click"
+					],
+					"path": [
+						"products"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Cart",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const response = pm.response.json();",
+							"let cartId = response.cartId;",
+							"",
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.expect(pm.response.code).to.equal(201);",
+							"});",
+							"pm.test(\"Cart created successfully\", function () {",
+							"    pm.expect(response.created).to.equal(true);",
+							"    pm.expect(cartId).to.not.be.null;",
+							"    pm.expect(cartId).to.be.a('string')",
+							"});",
+							"pm.collectionVariables.set(\"cartId\", cartId);"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "https://simple-grocery-store-api.click/carts",
+					"protocol": "https",
+					"host": [
+						"simple-grocery-store-api",
+						"click"
+					],
+					"path": [
+						"carts"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add Item to Cart",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const response = pm.response.json();",
+							"pm.collectionVariables.set(\"itemId\", response.itemId);",
+							"pm.test(\"Status code is 201\", function(){",
+							"    pm.expect(pm.response.code).to.equal(201);",
+							"})",
+							"pm.test(\"Item added successfully\", function(){",
+							"    pm.expect(response.created).to.equal(true);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n   \"productId\":\"{{productId}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://simple-grocery-store-api.click/carts/{{cartId}}/items",
+					"protocol": "https",
+					"host": [
+						"simple-grocery-store-api",
+						"click"
+					],
+					"path": [
+						"carts",
+						"{{cartId}}",
+						"items"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Order",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"let uniqueName = \"Customer_\" + Date.now();",
+							"pm.collectionVariables.set(\"uniqueName\", uniqueName);",
+							"",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const response = pm.response.json();",
+							"let orderId = response.orderId;",
+							"pm.collectionVariables.set(\"orderId\", orderId);",
+							"",
+							"pm.test(\"Status code is 201\", function(){",
+							"    pm.expect(pm.response.code).to.equal(201);",
+							"});",
+							"pm.test(\"Response time is less than 1s\", function(){",
+							"    pm.expect(pm.response.responseTime).to.be.below(1000); // 1 seconds timeout",
+							"})",
+							"pm.test(\"Order created successfully\", function () {",
+							"    pm.expect(response.created).to.equal(true);",
+							"});",
+							"pm.test(\"Order ID is not empty\", function () {",
+							"    pm.expect(response.orderId).to.not.equal(\"\");",
+							"});",
+							"pm.test(\"Order ID is a string\", function () {",
+							"    pm.expect(response.orderId).to.be.a('string');",
+							"});",
+							"",
+							"",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{accessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"cartId\": \"{{cartId}}\",\n    \"customerName\": \"{{uniqueName}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://simple-grocery-store-api.click/orders",
+					"protocol": "https",
+					"host": [
+						"simple-grocery-store-api",
+						"click"
+					],
+					"path": [
+						"orders"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Order Details",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const response = pm.response.json();",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.expect(pm.response.code).to.equal(200);",
+							"});",
+							"pm.test(\"Order ID matches\", function () {",
+							"    pm.expect(response.id).to.eql(pm.collectionVariables.get(\"orderId\"));",
+							"});",
+							"pm.test(\"Product ID matches\", function(){",
+							"    pm.expect(response.items[0].productId).to.eql(pm.collectionVariables.get(\"productId\"));",
+							"});",
+							"pm.test(\"Item ID matches\", function(){",
+							"    pm.expect(response.items[0].id).to.eql(pm.collectionVariables.get(\"itemId\"));",
+							"});",
+							"pm.test(\"Order has items\", function () {",
+							"    pm.expect(response.items).to.have.length.above(0);",
+							"});",
+							"pm.test(\"Order has a customer name\", function () {",
+							"    pm.expect(response.customerName).to.not.be.empty;",
+							"});",
+							"pm.test(\"Customer name matches\", function(){",
+							"    pm.expect(response.customerName).to.eql(pm.collectionVariables.get(\"uniqueName\"))",
+							"})"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"packages": {},
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{accessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://simple-grocery-store-api.click/orders/{{orderId}}",
+					"protocol": "https",
+					"host": [
+						"simple-grocery-store-api",
+						"click"
+					],
+					"path": [
+						"orders",
+						"{{orderId}}"
+					],
+					"query": [
+						{
+							"key": "invoice",
+							"value": "",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "cartId",
+			"value": ""
+		},
+		{
+			"key": "accessToken",
+			"value": ""
+		},
+		{
+			"key": "productId",
+			"value": ""
+		},
+		{
+			"key": "uniqueName",
+			"value": ""
+		},
+		{
+			"key": "orderId",
+			"value": ""
+		},
+		{
+			"key": "itemId",
+			"value": ""
+		}
+	]
+}
