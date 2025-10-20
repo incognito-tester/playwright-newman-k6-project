@@ -16,8 +16,8 @@
 						"exec": [
 							"var clientName = \"Client_\" + Date.now(); ",
 							"var uniqueEmail = \"user\" + Math.floor(Math.random() * 100000) + \"@example.com\";",
-							"pm.variables.set(\"clientName\", clientName);",
-							"pm.variables.set(\"uniqueEmail\", uniqueEmail)"
+							"pm.collectionVariables.set(\"clientName\", clientName);",
+							"pm.collectionVariables.set(\"uniqueEmail\", uniqueEmail)"
 						],
 						"type": "text/javascript",
 						"packages": {},

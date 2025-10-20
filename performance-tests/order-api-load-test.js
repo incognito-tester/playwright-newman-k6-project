@@ -1,49 +1,97 @@
-import { expect } from 'https://jslib.k6.io/k6-testing/0.5.0/index.js';
-import { browser } from 'k6/browser';
 import http from 'k6/http';
+import {check, sleep} from 'k6';
 
-export function protocolTest() {
-  // Get the home page of k6's Quick Pizza app
-  const response = http.get('https://quickpizza.grafana.com/');
-
-  // Simple assertions
-  expect(response.status).toBe(200);
-  expect(response.error).toEqual('');
-  expect(response.body).toBeDefined();
-}
-
-export async function browserTest() {
-  const page = await browser.newPage();
-
-  try {
-    await page.goto('https://quickpizza.grafana.com/');
-
-    // Assert the "Pizza Please" button is visible
-    await expect(page.locator('button[name=pizza-please]')).toBeVisible();
-  } finally {
-    await page.close();
-  }
-}
-
-export const options = {
-  scenarios: {
-    // Protocol tests
-    protocol: {
-      executor: 'shared-iterations',
-      vus: 1,
-      iterations: 1,
-      exec: 'protocolTest',
-    },
-
-    // Browser tests
-    ui: {
-      executor: 'shared-iterations',
-      options: {
-        browser: {
-          type: 'chromium',
-        },
-      },
-      exec: 'browserTest',
-    },
-  },
+export let options = {
+    vus: 1,
+    duration: '10s',
 };
+
+// Base URL and Endpoints
+const BASE_URL = 'https://simple-grocery-store-api.click';
+const AUTH = '/api-clients';
+const PRODUCTS = '/products';
+const CART = '/cart';
+const ORDERS = '/orders';
+export default function () {
+    let unique_client_name = `Client_${__VU}_${Date.now()}`;
+    let unique_email = `user$${__VU}_${Math.floor(Math.random() * 100000)}@example.com`;
+
+    // Registration API Call
+    let authPayload = JSON.stringify({
+        clientName: unique_client_name,
+        clientEmail: unique_email,
+    });
+
+    let authResponse = http.post(`${BASE_URL}${AUTH}`, authPayload, {
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    });
+    check(authResponse, {
+        'is status 201': (r) => r.status === 201,
+        'is response not empty': (r) => r.body.length > 0,
+    });
+    let authToken = authResponse.json('accessToken'); // Extract access token
+
+    // Get Products API Call
+    let productsResponse = http.get(`${BASE_URL}${PRODUCTS}`, {
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    });
+    check(productsResponse, {
+        'is status 200': (r) => r.status === 200,
+        'is products list not empty': (r) => r.json().length > 0,
+    });
+    let products = productsResponse.json();
+    // Select a random product if stock is available
+    let availableProducts = products.filter(product => product.inStock == true);
+    //let index = availableProducts[Math.floor(Math.random() * availableProducts.length)];
+    let productId = availableProducts[0].id; // Get product ID
+
+    // Create Cart API Call
+    let cartResponse = http.post(`${BASE_URL}${CART}`, null, {
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    });
+    check(cartResponse, {
+        'is status 201': (r) => r.status === 201,
+        'is cart created': (r) => r.json('cartId') !== null,
+    });
+    let cartId = cartResponse.json('cartId'); // Extract cart ID
+
+    // Add Item to Cart API Call
+    let addToCartPayload = JSON.stringify({
+        productId: productId,
+    });
+    let addToCartResponse = http.post(`${BASE_URL}${CART}/${cartId}/items`, addToCartPayload, {
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    });
+    check(addToCartResponse, {
+        'is status 201': (r) => r.status === 201,
+        'is item added to cart': (r) => r.json('created') === true,
+    });
+    let itemId = addToCartResponse.json('itemId'); // Extract item ID
+
+    // Create Order API Call
+    let uniqueCustomerName = `Customer_${__VU}_${Date.now()}`;
+    let createOrderPayload = JSON.stringify({
+        cartId: cartId,
+        customerName: uniqueCustomerName,
+    });
+    let createOrderResponse = http.post(`${BASE_URL}${ORDERS}`, createOrderPayload, {
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`, // Use the extracted token
+        },
+    });
+    check(createOrderResponse, {
+        'is status 201': (r) => r.status === 201,
+        'is order created': (r) => r.json('orderId') !== null,
+    });
+
+    sleep(1)
+}
