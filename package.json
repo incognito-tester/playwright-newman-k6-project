@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test:ui": "npx playwright test --reporter=list",
-    "test:api": "newman run ./api-tests/simple-grocery-api-test.json"
+    "test:api": "newman run ./api-tests/simple-grocery-api-test.json",
+    "test:load": "k6 run ./performance-tests/order-api-load-test.js"
   },
   "keywords": [],
   "author": "",
