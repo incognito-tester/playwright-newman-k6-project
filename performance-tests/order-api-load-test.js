@@ -3,8 +3,16 @@ import {check, sleep} from 'k6';
 import { htmlReport } from 'https://raw.githubusercontent.com/benc-uk/k6-reporter/main/dist/bundle.js';
 
 export let options = {
-    vus: 10,
-    duration: '20s',
+    stages: [
+        { duration: '30s', target: 10 }, // Ramp-up to 10 users over 30 seconds
+        { duration: '1m', target: 10 }, // Stay at 10 users for 1 minute
+        { duration: '30s', target: 20 }, // Ramp-up to 20 users over 30 seconds
+        { duration: '1m', target: 20 }, // Stay at 20 users for 1 minute
+        { duration: '30s', target: 0 }, // Ramp-down to 0 users over 30 seconds
+    ],
+    thresholds: {
+        http_req_duration: ['p(95)<800'], // 95% of requests should be below 800ms
+    },
 };
 
 // Base URL and Endpoints
