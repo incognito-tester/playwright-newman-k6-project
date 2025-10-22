@@ -1,4 +1,4 @@
-name: UI + API + LOAD Tests
+name: UI-API-Performance Tests
 on:
   push:
     branches: [ main, master ]

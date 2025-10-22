@@ -62,5 +62,3 @@ test('test an end-to-end order flow', async ({ page }) => {
   await menuButton.click();
   await logoutLink.click();
 });
-
-// Run on github actions with name UI + API + LOAD Tests
