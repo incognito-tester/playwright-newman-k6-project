@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test:ui": "npx playwright test --reporter=list",
-    "test:api": "newman run ./api-tests/simple-grocery-api-test.json",
+    "test:ui": "npx playwright test --reporter=list,html",
+    "test:api": "newman run ./api-tests/simple-grocery-api-test.json -r cli,htmlextra --reporter-htmlextra-export newman-report/index.html",
     "test:load": "k6 run ./performance-tests/order-api-load-test.js"
   },
   "keywords": [],
@@ -16,5 +16,8 @@
     "@playwright/test": "^1.56.0",
     "@types/node": "^24.7.2",
     "newman": "^6.2.1"
+  },
+  "dependencies": {
+    "newman-reporter-htmlextra": "^1.23.1"
   }
 }

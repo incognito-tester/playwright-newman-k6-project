@@ -1,18 +1,20 @@
 import http from 'k6/http';
 import {check, sleep} from 'k6';
+import { htmlReport } from 'https://raw.githubusercontent.com/benc-uk/k6-reporter/main/dist/bundle.js';
 
 export let options = {
-    vus: 1,
-    duration: '10s',
+    vus: 10,
+    duration: '20s',
 };
 
 // Base URL and Endpoints
 const BASE_URL = 'https://simple-grocery-store-api.click';
 const AUTH = '/api-clients';
 const PRODUCTS = '/products';
-const CART = '/cart';
+const CART = '/carts';
 const ORDERS = '/orders';
 export default function () {
+    // Create unique clientName and Email to pass each AUTH API call
     let unique_client_name = `Client_${__VU}_${Date.now()}`;
     let unique_email = `user$${__VU}_${Math.floor(Math.random() * 100000)}@example.com`;
 
@@ -27,6 +29,7 @@ export default function () {
             'Content-Type': 'application/json',
         },
     });
+
     check(authResponse, {
         'is status 201': (r) => r.status === 201,
         'is response not empty': (r) => r.body.length > 0,
@@ -39,6 +42,7 @@ export default function () {
             'Content-Type': 'application/json',
         },
     });
+
     check(productsResponse, {
         'is status 200': (r) => r.status === 200,
         'is products list not empty': (r) => r.json().length > 0,
@@ -49,12 +53,13 @@ export default function () {
     //let index = availableProducts[Math.floor(Math.random() * availableProducts.length)];
     let productId = availableProducts[0].id; // Get product ID
 
-    // Create Cart API Call
+    // // Create Cart API Call
     let cartResponse = http.post(`${BASE_URL}${CART}`, null, {
         headers: {
             'Content-Type': 'application/json',
         }
     });
+
     check(cartResponse, {
         'is status 201': (r) => r.status === 201,
         'is cart created': (r) => r.json('cartId') !== null,
@@ -74,7 +79,7 @@ export default function () {
         'is status 201': (r) => r.status === 201,
         'is item added to cart': (r) => r.json('created') === true,
     });
-    let itemId = addToCartResponse.json('itemId'); // Extract item ID
+    // let itemId = addToCartResponse.json('itemId'); // Extract item ID
 
     // Create Order API Call
     let uniqueCustomerName = `Customer_${__VU}_${Date.now()}`;
@@ -88,10 +93,18 @@ export default function () {
             'Authorization': `Bearer ${authToken}`, // Use the extracted token
         },
     });
+
+    // Validate if order is created successfully with an order ID
     check(createOrderResponse, {
         'is status 201': (r) => r.status === 201,
         'is order created': (r) => r.json('orderId') !== null,
     });
 
-    sleep(1)
+    sleep(1) 
+}
+
+export function handleSummary(data) {
+    return {
+        'k6-report/index.html': htmlReport(data),
+    };
 }

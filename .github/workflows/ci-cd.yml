@@ -40,6 +40,12 @@ jobs:
       run: npm install --save-dev newman
     - name: Run API tests
       run: npm run test:api
+    - uses: actions/upload-artifact@v4
+      if: ${{ !cancelled() }}
+      with:
+        name: newman-report
+        path: newman-report/
+        retention-days: 30
 
   performance-tests:
     # needs: [api-tests]
@@ -61,3 +67,9 @@ jobs:
         sudo apt-get install k6
     - name: Run Load tests
       run: npm run test:load
+    - uses: actions/upload-artifact@v4
+      if: ${{ !cancelled() }}
+      with:
+        name: k6-report
+        path: k6-report/
+        retention-days: 30

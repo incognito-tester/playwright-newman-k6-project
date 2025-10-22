@@ -20,12 +20,13 @@ test('test an end-to-end order flow', async ({ page }) => {
   const backToProductsButton = page.locator('[data-test="back-to-products"]');
   const menuButton = page.getByRole('button', { name: 'Open Menu' });
   const logoutLink = page.locator('[data-test="logout-sidebar-link"]');
+
   // Page visit and login
-  await page.goto(url);
   try {
     await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
+    console.log('Page loaded successfully!');
   }catch (e) {
-    console.log('Error during page navigation or login:', e);
+    console.log('Error during page navigation:', e);
   }
   await username.click();
   await username.fill('visual_user');
