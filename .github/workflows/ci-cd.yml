@@ -20,7 +20,7 @@ jobs:
     - name: Run Playwright tests
       run: npm run test:ui
     - uses: actions/upload-artifact@v4
-      if: ${{ !cancelled() }}
+      if: ${{ always() }}
       with:
         name: playwright-report
         path: playwright-report/
@@ -41,7 +41,7 @@ jobs:
     - name: Run API tests
       run: npm run test:api
     - uses: actions/upload-artifact@v4
-      if: ${{ !cancelled() }}
+      if: ${{ always() }}
       with:
         name: newman-report
         path: newman-report/
@@ -68,7 +68,7 @@ jobs:
     - name: Run Load tests
       run: npm run test:load
     - uses: actions/upload-artifact@v4
-      if: ${{ !cancelled() }}
+      if: ${{ always() }}
       with:
         name: k6-report
         path: k6-report/
